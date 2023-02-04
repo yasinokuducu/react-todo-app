@@ -3,11 +3,11 @@ function App() {
   const [todoText, setTodoText] = useState("");
   const [todos, setTodos] = useState([]);
   const [isEdit, setIsEdit] = useState(false);
+  const [willUpdateTodo, setWillUptadeTodo] = useState("");
 
-  const editTodo = (id) => {
-    setIsEdit(true);
-    const searchedTodo = todos.find((item) => item.id === id);
-    setTodoText(searchedTodo.text);
+  const deleteTodo = (id) => {
+    const filteredTodos = todos.filter((item) => item.id !== id);
+    setTodos(filteredTodos);
   };
 
   const changeIsDone = (id) => {
@@ -31,14 +31,28 @@ function App() {
       alert("You have the todo already");
       return;
     }
-    const newTodo = {
-      id: new Date().getTime(),
-      isDone: false,
-      text: todoText,
-      date: new Date(),
-    };
-    setTodos([newTodo, ...todos]);
-    setTodoText("");
+
+    if (isEdit === true) {
+      const searchedTodo = todos.find((item) => item.id === willUpdateTodo);
+      const updatedTodo = {
+        ...searchedTodo,
+        text: todoText,
+      };
+      const filteredTodos = todos.filter((item) => item.id !== willUpdateTodo);
+      setTodos([...filteredTodos, updatedTodo]);
+      setTodoText("");
+      setIsEdit(false);
+      setWillUptadeTodo("");
+    } else {
+      const newTodo = {
+        id: new Date().getTime(),
+        isDone: false,
+        text: todoText,
+        date: new Date(),
+      };
+      setTodos([...todos, newTodo]);
+      setTodoText("");
+    }
   };
 
   return (
@@ -53,8 +67,11 @@ function App() {
             placeholder="Type your todo"
             onChange={(event) => setTodoText(event.target.value)}
           />
-          <button className="btn btn-primary" type="submit">
-            ADD
+          <button
+            className={`btn btn-${isEdit === true ? "success" : "primary"}`}
+            type="submit"
+          >
+            {isEdit === true ? "Save" : "Add"}
           </button>
         </div>
       </form>
@@ -64,14 +81,26 @@ function App() {
         <>
           {todos.map((item) => (
             <div
-              className="alert alert-secondary d-flex
-            justify-content-between "
+              className={`alert alert-${
+                item.isDone === true ? "info" : "secondary"
+              } d-flex
+            justify-content-between`}
             >
               <p>{item.text}</p>
               <div>
                 <button
+                  className="btn btn-sm btn-danger"
+                  onClick={() => deleteTodo(item.id)}
+                >
+                  Delete
+                </button>
+                <button
                   className="btn btn-sm btn-success mx-1"
-                  onClick={() => editTodo(item.id)}
+                  onClick={() => {
+                    setIsEdit(true);
+                    setWillUptadeTodo(item.id);
+                    setTodoText(item.text);
+                  }}
                 >
                   Edit
                 </button>
